@@ -2,6 +2,9 @@
 
 A compact Spotify controller for macOS. It shows track artwork, title, artist, playback progress, and media controls in a Hammerspoon canvas.
 
+<img width="1800" height="1169" alt="image" src="https://github.com/user-attachments/assets/3baa1c6e-be2a-41b8-945f-3591105e916a" />
+
+
 The player:
 
 - Appears while Spotify runs.
