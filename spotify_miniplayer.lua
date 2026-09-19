@@ -119,6 +119,7 @@ function M.start(options)
     }
     local controller = {}
     local refresh
+    local schedulePoll
     local renderPlayer
 
     local function spotifyApp()
@@ -633,16 +634,33 @@ function M.start(options)
         end)
     end
 
+    local function pollInterval()
+        local app = spotifyApp()
+        if not app then return 5 end
+        return state.info and state.info.playerState == "playing" and 1 or 4
+    end
+
+    schedulePoll = function()
+        if state.stopped then return end
+        if state.pollTimer then state.pollTimer:stop() end
+        state.pollTimer = hs.timer.doAfter(pollInterval(), function()
+            state.pollTimer = nil
+            refresh()
+        end)
+    end
+
     refresh = function()
         if state.stopped then return end
         local app = spotifyApp()
         if not app then
             hidePlayer()
             state.info = nil
+            schedulePoll()
             return
         end
         if nativeMiniPlayerWindow(app) then
             hidePlayer()
+            schedulePoll()
             return
         end
         if state.refreshTask then return end
@@ -652,14 +670,19 @@ function M.start(options)
         task = hs.task.new("/usr/bin/osascript", function(exitCode, output)
             state.refreshTask = nil
             if state.stopped then return end
-            if exitCode ~= 0 then return end
+            if exitCode ~= 0 then schedulePoll(); return end
             local info = parseTrack(output)
-            if not info then return end
+            if not info then schedulePoll(); return end
             state.info = info
+            schedulePoll()
             updateArtwork(info)
             renderPlayer(info)
         end, {"-e", queryScript})
-        if task and task:start() then state.refreshTask = task end
+        if task and task:start() then
+            state.refreshTask = task
+        else
+            schedulePoll()
+        end
     end
 
     local function scheduleRefresh()
@@ -672,7 +695,7 @@ function M.start(options)
     end
 
     state.progressAnimationTimer = hs.timer.new(1 / 30, animateProgress)
-    state.pollTimer = hs.timer.doEvery(1, refresh)
+    schedulePoll()
     state.screenWatcher = hs.screen.watcher.new(scheduleRefresh):start()
     state.appWatcher = hs.application.watcher.new(function(name)
         if name == "Spotify" then scheduleRefresh() end
@@ -698,6 +721,8 @@ function M.start(options)
             shuffleEnabled = state.info and state.info.shuffleEnabled or false,
             controls = state.controls,
             tooltip = state.tooltipText,
+            pollInterval = pollInterval(),
+            pollTimerRunning = state.pollTimer and state.pollTimer:running() or false,
         }
     end
 
