@@ -183,7 +183,7 @@ function M.start(options)
         state.waveUpdatedAt = now
         state.wavePhase = (state.wavePhase + elapsed * 2 * math.pi * progressWaveCyclesPerSecond) % (2 * math.pi)
         state.canvas.progress.coordinates = progressWavePoints(
-            state.progressLength or 0, height - 6, state.wavePhase, progressWaveAmplitude
+            state.progressLength or 0, height - 8, state.wavePhase, progressWaveAmplitude
         )
     end
 
@@ -410,17 +410,17 @@ function M.start(options)
             id = "progressTrack", type = "rectangle", action = "fill",
             fillColor = {white = 1, alpha = 0.12},
             roundedRectRadii = {xRadius = 1, yRadius = 1},
-            frame = {x = 56 + remainingStart, y = height - 7, w = textWidth - remainingStart, h = 2},
+            frame = {x = 56 + remainingStart, y = height - 9, w = textWidth - remainingStart, h = 2},
         })
         local wave = vectorPath("progress", progressWavePoints(
-            filledWidth, height - 6, state.wavePhase, progressWaveAmplitude
+            filledWidth, height - 8, state.wavePhase, progressWaveAmplitude
         ), colors.accent)
         wave.strokeWidth = 2
         wave.action = filledWidth > 0 and "stroke" or "skip"
         table.insert(elements, wave)
         table.insert(elements, {
             id = "progressThumb", type = "circle", action = "fill", fillColor = colors.accent,
-            center = {x = 56 + filledWidth, y = height - 6}, radius = 2.5,
+            center = {x = 56 + filledWidth, y = height - 8}, radius = 2.5,
         })
 
         state.controls = {
