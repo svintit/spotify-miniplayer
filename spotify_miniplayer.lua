@@ -413,8 +413,7 @@ function M.start(options)
             frame = {x = 56 + remainingStart, y = height - 7, w = textWidth - remainingStart, h = 2},
         })
         local wave = vectorPath("progress", progressWavePoints(
-            filledWidth, height - 6, state.wavePhase,
-            info.playerState == "playing" and progressWaveAmplitude or 0
+            filledWidth, height - 6, state.wavePhase, progressWaveAmplitude
         ), colors.accent)
         wave.strokeWidth = 2
         wave.action = filledWidth > 0 and "stroke" or "skip"
